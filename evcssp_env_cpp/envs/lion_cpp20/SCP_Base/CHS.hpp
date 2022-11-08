@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 #include <tuple>
+#include <unistd.h>
 
 
 std::vector<std::vector<double>> car_flow_possibility_list;
@@ -27,7 +28,6 @@ std::default_random_engine e;
 void Change_Use_Seed(bool seed_input) {
     Use_Seed = seed_input;
 }
-
 
 // tested
 class RandomUtil {
@@ -172,7 +172,16 @@ public:
     };
 };
 
-int no_use = Read2Vector::read("car_flow_possibility_list_save.csv", car_flow_possibility_list);
+
+int no_use;
+
+std::string flow_fir;
+void Get_Car_Flow_Dir(std::string flow_csv_dir){
+    flow_fir = std::move(flow_csv_dir);
+    flow_fir += "car_flow_possibility_list_save.csv";
+    no_use = Read2Vector::read(flow_fir, car_flow_possibility_list);
+    std::cout << flow_fir <<std::endl;
+}
 
 // tested
 class Station { // NOLINT(cppcoreguidelines-pro-type-member-init)

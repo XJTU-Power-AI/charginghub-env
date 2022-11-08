@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/lion_cpp20.dir/main.cpp.o -o lion_cpp20 

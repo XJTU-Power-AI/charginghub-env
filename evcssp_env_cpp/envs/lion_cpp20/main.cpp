@@ -19,6 +19,7 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE (pyevstation) //导出的module 名字
 {
     def("Change_Use_Seed", Change_Use_Seed);
+    def("Get_Car_Flow_Dir", Get_Car_Flow_Dir);
     class_<std::map<int, float> >("Map_int_float")
             .def(map_indexing_suite<std::map<int, float> >());
 
