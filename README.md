@@ -5,8 +5,7 @@ This repository is the official implementation of the charging-hub environment u
 ## Getting started:
 
 
-- To install, first build Boost.Python libraries from source, 
-then `cd` into the root directory and type `pip install -e .` 
+- To install, build Boost.Python libraries from source, then `cd` into the root directory and type `pip install -e .` 
 
 - Known dependencies: Python (>=3.7), OpenAI gym (0.18.3), Boost (1.69.0)
 
