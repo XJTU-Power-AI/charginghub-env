@@ -18,18 +18,6 @@ with open(file_name, 'rb') as fo:
     wd_power_data = pickle.load(fo)
 
 
-# pv_max = max(max(pv_power_data))
-# pv_min = min(min(pv_power_data))
-# wd_max = max(max(wd_power_data))
-# wd_min = min(min(wd_power_data))
-# print("pv_max ", pv_max)
-# print("pv_min ", pv_min)
-# print("wd_max", wd_max)
-# print("wd_min", wd_min)
-# print(1)
-# pass
-
-
 class ReNew:
     def __init__(self):
         def rand_gen(start, end):
@@ -65,7 +53,6 @@ class ReNew:
 
 
 class OU_Noise(object):
-    """Ornstein-Uhlenbeck process."""
 
     def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
         self.mu = mu * np.ones(size)
@@ -76,11 +63,9 @@ class OU_Noise(object):
         self.reset()
 
     def reset(self):
-        """Reset the internal state (= noise) to mean (mu)."""
         self.state = copy.copy(self.mu)
 
     def sample(self):
-        """Update internal state and return it as a noise sample."""
         dx = self.theta * (self.mu - self.state) + self.sigma * np.array(
             [np.random.normal() for _ in range(len(self.state))])
         self.state += dx
@@ -88,13 +73,4 @@ class OU_Noise(object):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
-    rn = ReNew()
-    for _ in range(50):
-        rn.renew_reset()
-        # one_day_data = []
-        # for i in range(96):
-        #     one_day_data.append(rn.get_wd_power(i))
-        # plt.plot(one_day_data)
-        # plt.show()
+    pass

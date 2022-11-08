@@ -36,7 +36,6 @@ class Electrolyser(object):
         return self.power
 
     def get_power(self, v_H_mass):  # g/s
-        # print('v_H_mass', v_H_mass)
         if self.cell_number == 0:
             return 0
         self.v_H_mass = v_H_mass / self.cell_number
@@ -97,16 +96,12 @@ class HyStore(object):
         self.h_v_max = 5000 if store_v is None else store_v  # m^3
         self.capacity_temp = self.h_v_max * 1000  # L
         self.capacity_mass = self.density * self.capacity_temp  # g
-        # print('self.capacity_mass', self.capacity_mass)
         self.capacity = init_soc * self.capacity_mass
         self.Store_SOC = init_soc
         self.init_soc_ = init_soc
-        # print('self.capacity_mass', self.capacity_mass)
 
     def sty_step(self, mass_s_H2, hy_use=0):  # g/s
         temp_to_store = mass_s_H2 * 15 * 60
-        # print('temp_to_store', temp_to_store)
-        # print('hy_use', hy_use)
         self.capacity += temp_to_store
 
         upper_change = self.capacity_mass - self.capacity
@@ -120,10 +115,7 @@ class HyStore(object):
         self.not_meet = hy_use - temp_to_change
 
         self.capacity -= temp_to_change
-        # print(111111111111111, self.capacity)
-        # self.capacity = min(self.capacity, self.capacity_mass)
         # Hydrogen Storage Optimal Scheduling for Fuel Supply and Capacity - Based Demand Response Program Under Dynamic Hydrogen Pricing
-        # self.capacity = max(self.capacity, self.capacity_mass * 0.1)
         self.Store_SOC = self.capacity / self.capacity_mass
 
     def sty_reset(self):
@@ -131,48 +123,8 @@ class HyStore(object):
         self.Store_SOC = self.init_soc_
 
 
-# class HyFEVStation(object):
-#     def __init__(self):
-#         # hv property ; unit: g
-#         # https: // www.fueleconomy.gov / feg / fcv_sbs.shtml (360/66)
-#         self.capacity_mass = 5.45 * 1000
-#         # station property
-#         self.arrive_number = None
-#         self.arrive_soc_ini_list = []
-#         self.arrive_soc_tar_list = []
-#         self.needed_soc_list = []
-#         self.arrive_number_sum = 0
-#         self.total_mass_need = None
-#
-#     def _hv_arrive(self, time):
-#         self.arrive_number = PoissonNumber.hv_car_number_wrt_poisson(time)
-#
-#     def hvs_step(self, time):
-#         self._hvs_reset()
-#         self._hv_arrive(time)
-#         self.arrive_number_sum += self.arrive_number
-#         # print('self.arrive_number', self.arrive_number)
-#         # print('self.arrive_number_sum', self.arrive_number_sum)
-#         for _ in range(self.arrive_number):
-#             self.arrive_soc_ini_list.append(CarArriveRandom.mk_soc())
-#             self.arrive_soc_tar_list.append(RandomUtil.uniform_rand(80.0, 100.0, True))
-#             self.needed_soc_list.append(
-#                 (self.arrive_soc_tar_list[-1] - self.arrive_soc_ini_list[-1]) * 0.01 * self.capacity_mass)
-#         self.total_mass_need = sum(self.needed_soc_list)
-#
-#     def _hvs_reset(self):
-#         self.arrive_number = None
-#         self.arrive_soc_ini_list = []
-#         self.arrive_soc_tar_list = []
-#         self.needed_soc_list = []
-#         # self.arrive_number_sum = 0
-#         self.total_mass_need = None
-
-
 class HySystem(object):
     def __init__(self, hydro_prod_rate=None, hydro_store_vlt=None, init_soc=0.1, fcev_permeanbility=0.01):
-        # test version
-        # self.hvs = HyFEVStation()
         self.hvs = HyFCEVStation(fcev_permeanbility)
         self.cpr = Compressor()
         assert init_soc >= 0.1 and init_soc <= 1
@@ -199,7 +151,6 @@ class HySystem(object):
         self.hy_reset()
 
     def hy_step(self, gen_speed=None, init=None):  # (0~1) in 15min
-        # print('gen_speed', gen_speed)
         assert self.sty.capacity >= 0 * self.sty.capacity_mass, "111"
         if gen_speed is not None:
             assert 0 <= gen_speed <= 1
@@ -209,16 +160,12 @@ class HySystem(object):
 
         self.hvs.hvs_step(self.sys_time)
 
-        # todo: !!!!!
         assert self.sty.capacity >= 0 * self.sty.capacity_mass, "222"
         # to make sure that soc is lower than 1 and greater than 0.1
-        # must_charge = max(0, self.hvs.total_mass_need - (self.sty.capacity - self.sty.capacity_mass * 0.1))
-        # must_charge = min(must_charge, self.sty.capacity_mass - self.sty.capacity)
         must_charge = max(0, self.sty.capacity_mass * 0.1 - self.sty.capacity)
         upper_charge = max(self.sty.capacity_mass - self.sty.capacity, 0)
 
         if gen_speed is not None:
-            # todo
             charge_temp = max(min(hy_speed(gen_speed) * (15 * 60), upper_charge), must_charge)
             self.hy_flow_speed = charge_temp / (15 * 60)
 
@@ -259,9 +206,7 @@ class HyFCEVStation(object):
     def __init__(self, permeate=0.01):
         # hv property ; unit: g
 
-        # # https://www.fueleconomy.gov/feg/fcv_sbs.shtml (360/66) (360/68)
-        # # self.capacity_mass = 5.45 * 1000
-        # #self.capacity_volume = (360 / 68) * 4.54609188 / 1000
+        # https://www.fueleconomy.gov/feg/fcv_sbs.shtml (360/66) (360/68)
 
         # https://en.wikipedia.org/wiki/Hyundai_Nexo
         self.capacity_mass = 6.3 * 1000  # g
@@ -365,13 +310,6 @@ class HyFCEVStation(object):
         time_need = (target_pressure - pressure_init) / APRR
         mass_need = self.__pressure_to_mass(target_pressure) - self.__pressure_to_mass(pressure_init)
         return time_need, mass_need
-
-    # def __top_off(self, pressure_init):
-    #     assert 69 - pressure_init > 0, "top off error!"
-    #     time_need = (69 - pressure_init) / self.APRR_norm_val + (87.4 - 69) / self.APRR_top_off
-    #     target_pressure = self.__init_to_target_pressure(pressure_init)
-    #     mass_need = self.__pressure_to_mass(target_pressure) - self.__pressure_to_mass(pressure_init)
-    #     return time_need, mass_need
 
     def __init_to_target_ramp_rate(self, pressure):
         if pressure < 5:

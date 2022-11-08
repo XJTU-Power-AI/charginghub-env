@@ -288,26 +288,4 @@ BOOST_PYTHON_MODULE (pyevstation) //导出的module 名字
 
         //////////////////////////////////////////////// inherit Station end
             ;
-
-
-
-//    class_<>()
-//            .def("", &);
-
-
 }
-
-
-
-//int main() {
-//
-//    testSCP();
-////    int k=-3;
-////    int n=7;
-////    int a=((-8%n)+n)%n;
-////
-////    cout<<a<<endl;
-//    return 0;
-//}
-
-

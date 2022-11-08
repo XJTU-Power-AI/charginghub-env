@@ -751,12 +751,6 @@ public:
         return car_max;
     };
 
-//    static int ev_car_number_wrt_poisson(int what_time) {
-//        float possible_in = 0.1;
-//        float permeability = 0.2;
-//        float po_ev_number = possible_in * permeability * give_car_number_wrt_poisson(what_time);
-//        return std::round(po_ev_number);
-//    };
     static int ev_car_number_wrt_poisson_fast(int what_time) {
         float possible_in = 0.15;
         float permeability = 0.2;
@@ -945,86 +939,6 @@ private:
         return std::ceil(needed_time);
     };
 };
-
-//// tested
-//class FastPile : public ChargePositionBase {
-//public:
-//    FastPile(int position_input, Station *station_name_input) : ChargePositionBase(position_input,
-//                                                                                   station_name_input) {
-//    };
-//
-//    void add_car() override {
-//        this->arrive_soc = CarArriveRandom::mk_soc();
-//        this->current_soc = this->arrive_soc;
-//        this->target_soc = RandomUtil::uniform_rand(80, 100);
-//        int must_needed = calculate_min_charging_time();
-//        this->stay_time = must_needed + CarArriveRandom::mk_late_time("slow");
-//        this->already_stay_time = 0;
-//        this->occupy_position();
-//        this->station_name->situation["power"][this->position] = UtilFast::fast_time_to_power(
-//                UtilFast::fast_soc_to_time(this->current_soc, this->station_name->constant_charging),
-//                this->station_name->constant_charging);
-//    };
-//
-//    void calculate_needed() override {
-//        float needed_time = UtilFast::fast_soc_to_time(this->target_soc, this->station_name->constant_charging) -
-//                            UtilFast::fast_soc_to_time(this->current_soc, this->station_name->constant_charging);
-//        int time_left = this->stay_time - this->already_stay_time;
-//
-//        if (needed_time > 0) {
-//            if (time_left <= std::ceil(needed_time)) {
-//                this->must_charge = true;
-//                this->emergency = 10;
-//                this->station_name->situation["emergency"][this->position] = 10;
-//            } else {
-//                this->must_charge = false;
-//                this->emergency = pow((needed_time / (float) time_left), 2);
-//                this->station_name->situation["emergency"][this->position] = pow((needed_time / (float) time_left), 2);
-//            }
-//        } else {
-//            this->station_name->situation["emergency"][this->position] = 0.0;
-//        }
-//    };
-//
-//    void car_step() override {
-//        float temp_time = UtilFast::fast_soc_to_time(this->current_soc, this->station_name->constant_charging) + 1;
-//        this->current_soc = UtilFast::fast_time_to_soc(temp_time, this->station_name->constant_charging);
-//        this->current_power = UtilFast::fast_time_to_power(temp_time, this->station_name->constant_charging);
-//        this->station_name->situation["power"][this->position] = UtilFast::fast_time_to_power(temp_time,
-//                                                                                              this->station_name->constant_charging);
-//        for (int i = 0; i < this->station_name->charge_number; i++) {
-//            this->station_name->situation["assign"][i] = 0;
-//        }
-//    };
-//
-//
-//    void remove_car(bool quick_leave) override {
-//        this->already_stay_time += 1;
-//        int time_left = this->stay_time - this->already_stay_time;
-//        if (time_left <= 0) {
-//            if (std::ceil(this->current_soc) < std::floor(this->target_soc)) {
-//                std::cout << "fast charge is not complete " << std::endl;
-//                std::cout << "fast charge time " << time_left << std::endl;
-//                std::cout << "fast current " << this->current_soc << std::endl;
-//                std::cout << "fast target " << this->target_soc << std::endl;
-//            }
-//            this->reset_position();
-//        }
-//        if (quick_leave) {
-//            if (this->current_soc >= this->target_soc) {
-////                std::cout << "charging complete before the leaving time!" << std::endl;
-//                this->reset_position();
-//            }
-//        }
-//    };
-//
-//private:
-//    int calculate_min_charging_time() {
-//        float needed_time = UtilFast::fast_soc_to_time(this->target_soc, this->station_name->constant_charging) -
-//                            UtilFast::fast_soc_to_time(this->current_soc, this->station_name->constant_charging);
-//        return std::ceil(needed_time);
-//    };
-//};
 
 
 ///////////// edit at 2022 8 15 for recording fast pile situation
@@ -1288,7 +1202,7 @@ private:
             in_car = PoissonNumber::ev_car_number_wrt_poisson_slow(in_car_time);
 //            std::cout<<"in ev "<<in_car<<std::endl;
         }
-        // TODO: leave & arrival possibility is added here!   begin
+        // leave & arrival possibility is added here!   begin
         float a;
         float true_line = 0;
         float leave_possibility;
@@ -1310,7 +1224,7 @@ private:
                 true_in_car += 1;
             }
         }
-        // TODO: end
+        // end
 
         this->flow_in_number.push_back(true_in_car);
         this->assign_car();
@@ -1599,7 +1513,7 @@ private:
             in_car = PoissonNumber::ev_car_number_wrt_poisson_fast(in_car_time);
         }
 
-        // TODO: leave & arrival possibility is added here!   begin
+        // leave & arrival possibility is added here!   begin
         float a;
         float true_line = 0;
         float leave_possibility;
@@ -1621,7 +1535,7 @@ private:
                 true_in_car += 1;
             }
         }
-        // TODO: end
+        // end
 
         this->flow_in_number.push_back(in_car);
         this->assign_car();

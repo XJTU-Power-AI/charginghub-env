@@ -10,27 +10,25 @@ import math
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 print(os.path.dirname(os.path.abspath(__file__)))
-from lion_cpp20.Aggregator_Simple import Aggregator, HubAggregator, HubAggregator_v2, HubAggregator_v3_1
+from lion_cpp20.Aggregator_Simple import HubAggregator_v2
 from lion_cpp20.hydro_sys import HySystem, HFC
 from lion_cpp20.renewable import ReNew
 from lion_cpp20.pyevstation import Change_Use_Seed, Get_Car_Flow_Dir
 
 Get_Car_Flow_Dir(os.path.dirname(os.path.abspath(__file__))+"/lion_cpp20/SCP_Base/")
-print(77777777)
-
 
 class EvcsspManagerEnv_v1(gym.Env):
     metadata = {
-        'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second': 30
+        "render.modes": ["human", "rgb_array"],
+        "video.frames_per_second": 30
     }
 
     def __init__(self, station_list, station_type_list, constant_charging=False, hydro_prod_rate=None,
                  hydro_store_vlt=None, init_soc=None, fc_max_power=None, fcev_permeate=0.01, seed_rand=True,
                  use_lagrange=False):
         Change_Use_Seed(seed_rand)
-        print('this env is v1 for charging hub with fuel cell')
-        print('init hydrogen storage init soc is', init_soc)
+        print("this env is v1 for charging hub with fuel cell")
+        print("init hydrogen storage init soc is", init_soc)
         self.price_noise = OU_Noise(size=1, seed=1, theta=.1, sigma=0.005)
         self.me = None
         self.simulate = False
@@ -189,7 +187,7 @@ class EvcsspManagerEnv_v1(gym.Env):
                     self.gen_hy = True
                 self.hy_act = action_real[-1]
 
-        ############  renewable add change here   ###############  begin
+        ############  renewable add here   ###############  begin
         self.re_hy_gen = self.hy_sys.hy_flow_speed_15
         hydrogen_power = self.hy_sys.all_power_second
         self.re_hydrogen_power_init = hydrogen_power
@@ -217,12 +215,11 @@ class EvcsspManagerEnv_v1(gym.Env):
         else:
             hydrogen_power -= re_new_power
             used_renew = re_new_power
-        ############  renewable add change here   ###############  end;  output: hydrogen_power ev_power_sum ev_power_list
+        ############  renewable add here   ###############  end;  output: hydrogen_power ev_power_sum ev_power_list
         self.re_ev_power_list = ev_power_list
         self.re_used_renew = used_renew
 
         ############  fuel cell add here   ###############  begin
-        # todo: add condition
         if debug or self.gen_hy:
             _, fc_power = self.hfc.use_cell(0, ev_power_sum)
         else:
@@ -240,7 +237,6 @@ class EvcsspManagerEnv_v1(gym.Env):
 
         self.re_hydrogen_power = hydrogen_power
         self.re_ev_power_sum = ev_power_sum
-        # self.re_ev_power_list = ev_power_list
 
         ############  to_calculate_income ###########
         real_price_dollar = self.real_state[1] / 4  # kW*15min
@@ -255,21 +251,16 @@ class EvcsspManagerEnv_v1(gym.Env):
         self.re_income_evs_cost = - real_price_dollar * (ev_power_list[0] + ev_power_list[1])
         income_evs_serve = 0.8 * sum(self.env_aggregator.ag_flow_in_number)
 
-        # todo
         self.re_income_evs_cost_list = [- real_price_dollar * ev_power_list[0], - real_price_dollar * ev_power_list[1]]
         self.re_income_evs_list = [0.42 / 4 * self.env_aggregator.evcssp_charge_power_list[0],
                                    0.21 / 4 * self.env_aggregator.evcssp_charge_power_list[1]]
         self.re_income_evs_serve = income_evs_serve
 
         # https://www.sgh2energy.com/economics
-        # income_hys = 6 / 1000 * self.hy_sys.hvs.total_mass_need
         income_hys = 6 / 1000 * self.hy_sys.sty.hy_use
         not_meet_loss = -10 / 1000 * self.hy_sys.sty.not_meet
 
-        # print("total mass is ", self.hy_sys.hvs.total_mass_need)
-
         hy_cost = -real_price_dollar * hydrogen_power
-        # hy_cost_init = -real_price_dollar * self.hydrogen_power_init
 
         self.mass_need = self.hy_sys.hvs.total_mass_need
         self.mass_support = self.hy_sys.sty.hy_use
@@ -282,7 +273,6 @@ class EvcsspManagerEnv_v1(gym.Env):
 
         self.re_income_evs = income_evs
 
-        # todo
         self.re_income_hys = income_hys
         self.re_hy_cost = hy_cost
 
@@ -290,7 +280,6 @@ class EvcsspManagerEnv_v1(gym.Env):
             (income_hys + income_evs + income_evs_serve + hy_cost + 1 * hy_loss + not_meet_loss) / 50)
         self.acumulate_reward += reward
 
-        # just record
         ################
         self.income = income_hys + income_evs + income_evs_serve + hy_cost
         self.not_meet_loss = not_meet_loss
@@ -310,7 +299,7 @@ class EvcsspManagerEnv_v1(gym.Env):
                     self.hy_sys.sty.Store_SOC - self.hy_init_soc) * self.hy_sys.sty.capacity_mass / 1000
             temp_deviation = temp_deviation / 0.2
             print("reward", self.acumulate_reward)
-            print('SOC', temp_deviation)
+            print("SOC", temp_deviation)
             print("SOC_init is ", self.hy_init_soc)
             print("SOC_end is ", self.hy_sys.sty.Store_SOC)
             self.test_penalty = abs(temp_deviation)
@@ -339,16 +328,11 @@ class EvcsspManagerEnv_v1(gym.Env):
         return np.array(self.state)
 
     def state_norm(self):
-        # price_mean = 22.578910431309936
-        # price_std = 3.537822280277024
-        # pv_max=42
-        # wd_max=92
         k = 2 * np.pi / 96
         time_norm = np.sin(k * self.real_state[0])
         price_norm = (self.real_state[1] - self.price_mean) / self.price_std
         norm_state_list = [time_norm, price_norm]
 
-        # norm_station_list = []
         station_num_temp = 0
         for station in self.env_aggregator.evcssp_evs_objects:
             if station.charge_number > 0:
@@ -360,7 +344,7 @@ class EvcsspManagerEnv_v1(gym.Env):
                 norm_state_list += norm_station_list
                 station_num_temp += 1
 
-        assert station_num_temp >= 1, 'A station must have fast pile or slow pile!'
+        assert station_num_temp >= 1, "A station must have fast pile or slow pile!"
 
         # add normalized hy soc
         norm_state_list.append(self.real_state[-3])
@@ -368,17 +352,15 @@ class EvcsspManagerEnv_v1(gym.Env):
         # add normalized pv power
         max_pv_power = 42 * self.scale_pv
         norm_state_list.append(self.real_state[-2] / max_pv_power)
-        # print("pv power ", self.real_state[-2] / max_pv_power)
 
         # add normalized wd power
         max_wd_power = 92 * self.scale_wd
         norm_state_list.append(self.real_state[-1] / max_wd_power)
-        # print("wd power ", self.real_state[-1] / max_wd_power)
 
-        assert len(norm_state_list) == len(self.real_state), 'state length error'
+        assert len(norm_state_list) == len(self.real_state), "state length error"
         self.state = np.array(norm_state_list)
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         pass
 
     def close(self):
@@ -403,7 +385,7 @@ class EvcsspManagerEnv_v1(gym.Env):
             price_next = self.env_aggregator.price[-1] + self.price_next
         self.price_count += 1
         ################# price add here #################
-        assert time == self.env_aggregator.aggregator_time_hole == self.hy_sys.sys_time, '时间不一致'
+        assert time == self.env_aggregator.aggregator_time_hole == self.hy_sys.sys_time, "time inconsistent"
         real_state_list = [time, price_next]
 
         for station in self.env_aggregator.evcssp_evs_objects:
@@ -434,18 +416,15 @@ class EvcsspManagerEnv_v1(gym.Env):
                 real_actions.append(1.0)
             else:
                 real_actions.append(0.0)
-        # print('real_action', real_actions)
         if action[-1] is not None:
             real_actions.append((action[-1] + 1) / 2)
         else:
             real_actions.append(action[-1])
-            print("000000000000000000000000000")
 
         if action[-2] is not None:
             real_actions.append((action[-2] + 1) / 2)
         else:
             real_actions.append(action[-2])
-            print("000000000000000000000000000")
         return np.array(real_actions)
 
     def show_situation(self):
@@ -455,7 +434,6 @@ class EvcsspManagerEnv_v1(gym.Env):
 
 # noinspection PyPep8Naming,DuplicatedCode,PyNoneFunctionAssignment
 class OU_Noise(object):
-    """Ornstein-Uhlenbeck process."""
 
     def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
         self.mu = mu * np.ones(size)
@@ -466,11 +444,9 @@ class OU_Noise(object):
         self.reset()
 
     def reset(self):
-        """Reset the internal state (= noise) to mean (mu)."""
         self.state = copy.copy(self.mu)
 
     def sample(self):
-        """Update internal state and return it as a noise sample."""
         dx = self.theta * (self.mu - self.state) + self.sigma * np.array(
             [np.random.normal() for _ in range(len(self.state))])
         self.state += dx
