@@ -8,8 +8,8 @@
 #include <map>
 #include "SCP_Base/CHS.hpp"
 #include <boost/python.hpp>
-#include "suite/indexing/vector_indexing_suite.hpp"
-#include "suite/indexing/map_indexing_suite.hpp"
+#include "python/include/boost/python/suite/indexing/vector_indexing_suite.hpp"
+#include "python/include/boost/python/suite/indexing/map_indexing_suite.hpp"
 
 //using namespace std;
 using namespace boost::python;
