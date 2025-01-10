@@ -1,0 +1,3 @@
+[submodule "evcssp_env_cpp/envs/lion_cpp20/python"]
+	path = evcssp_env_cpp/envs/lion_cpp20/python
+	url = https://github.com/boostorg/python.git
