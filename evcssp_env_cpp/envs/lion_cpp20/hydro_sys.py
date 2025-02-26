@@ -90,7 +90,7 @@ class Compressor(object):
 
 class HyStore(object):
     # https: // ieeexplore.ieee.org / stamp / stamp.jsp?tp = & arnumber = 9265468
-    def __init__(self, store_v=None, init_soc=0.1):
+    def __init__(self, store_v=None, init_soc=0.1, hydro_loss=0):
         self.density = 0.089 * (200 / 1)  # g/L
         # Hydrogen Storage Optimal Scheduling for Fuel Supply and Capacity - Based Demand Response Program Under Dynamic Hydrogen Pricing
         self.h_v_max = 5000 if store_v is None else store_v  # m^3
@@ -99,6 +99,7 @@ class HyStore(object):
         self.capacity = init_soc * self.capacity_mass
         self.Store_SOC = init_soc
         self.init_soc_ = init_soc
+        self.hydro_loss = hydro_loss
 
     def sty_step(self, mass_s_H2, hy_use=0):  # g/s
         temp_to_store = mass_s_H2 * 15 * 60
@@ -115,7 +116,13 @@ class HyStore(object):
         self.not_meet = hy_use - temp_to_change
 
         self.capacity -= temp_to_change
+
+        # hydrogen_loss
+        self.capacity -= self.capacity * self.hydro_loss
+
+        # self.capacity = min(self.capacity, self.capacity_mass)
         # Hydrogen Storage Optimal Scheduling for Fuel Supply and Capacity - Based Demand Response Program Under Dynamic Hydrogen Pricing
+        # self.capacity = max(self.capacity, self.capacity_mass * 0.1)
         self.Store_SOC = self.capacity / self.capacity_mass
 
     def sty_reset(self):
@@ -124,11 +131,11 @@ class HyStore(object):
 
 
 class HySystem(object):
-    def __init__(self, hydro_prod_rate=None, hydro_store_vlt=None, init_soc=0.1, fcev_permeanbility=0.01):
+    def __init__(self, hydro_prod_rate=None, hydro_store_vlt=None, init_soc=0.1, fcev_permeanbility=0.01, hydro_loss=0):
         self.hvs = HyFCEVStation(fcev_permeanbility)
         self.cpr = Compressor()
         assert init_soc >= 0.1 and init_soc <= 1
-        self.sty = HyStore(hydro_store_vlt, init_soc)  # default volume 5000 m^3
+        self.sty = HyStore(hydro_store_vlt, init_soc, hydro_loss)  # default volume 5000 m^3
         # Hydrogen Storage Optimal Scheduling for Fuel Supply and Capacity - Based Demand Response Program Under Dynamic Hydrogen Pricing
         if hydro_prod_rate is None:
             self.F_h_max = 430  # m^3/h
@@ -160,7 +167,7 @@ class HySystem(object):
 
         self.hvs.hvs_step(self.sys_time)
 
-        assert self.sty.capacity >= 0 * self.sty.capacity_mass, "222"
+        assert self.sty.capacity >= 0 * self.sty.capacity_mass, "capacity must above 0"
         # to make sure that soc is lower than 1 and greater than 0.1
         must_charge = max(0, self.sty.capacity_mass * 0.1 - self.sty.capacity)
         upper_charge = max(self.sty.capacity_mass - self.sty.capacity, 0)
@@ -206,7 +213,9 @@ class HyFCEVStation(object):
     def __init__(self, permeate=0.01):
         # hv property ; unit: g
 
-        # https://www.fueleconomy.gov/feg/fcv_sbs.shtml (360/66) (360/68)
+        # # https://www.fueleconomy.gov/feg/fcv_sbs.shtml (360/66) (360/68)
+        # # self.capacity_mass = 5.45 * 1000
+        # #self.capacity_volume = (360 / 68) * 4.54609188 / 1000
 
         # https://en.wikipedia.org/wiki/Hyundai_Nexo
         self.capacity_mass = 6.3 * 1000  # g
@@ -311,6 +320,13 @@ class HyFCEVStation(object):
         mass_need = self.__pressure_to_mass(target_pressure) - self.__pressure_to_mass(pressure_init)
         return time_need, mass_need
 
+    # def __top_off(self, pressure_init):
+    #     assert 69 - pressure_init > 0, "top off error!"
+    #     time_need = (69 - pressure_init) / self.APRR_norm_val + (87.4 - 69) / self.APRR_top_off
+    #     target_pressure = self.__init_to_target_pressure(pressure_init)
+    #     mass_need = self.__pressure_to_mass(target_pressure) - self.__pressure_to_mass(pressure_init)
+    #     return time_need, mass_need
+
     def __init_to_target_ramp_rate(self, pressure):
         if pressure < 5:
             return self.APRR_top_off
@@ -325,49 +341,49 @@ class HyFCEVStation(object):
         elif self.lookup_table[0][1] <= pressure < self.lookup_table[0][2]:
             return (self.lookup_table[1][2] - self.lookup_table[1][1]) / (
                     self.lookup_table[0][2] - self.lookup_table[0][1]) * (pressure - self.lookup_table[0][1]) + \
-                   self.lookup_table[1][1]
+                self.lookup_table[1][1]
         elif self.lookup_table[0][1 + 1] <= pressure < self.lookup_table[0][2 + 1]:
             a = 1
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         elif self.lookup_table[0][1 + 2] <= pressure < self.lookup_table[0][2 + 2]:
             a = 2
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         elif self.lookup_table[0][1 + 3] <= pressure < self.lookup_table[0][2 + 3]:
             a = 3
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         elif self.lookup_table[0][1 + 4] <= pressure < self.lookup_table[0][2 + 4]:
             a = 4
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         elif self.lookup_table[0][1 + 5] <= pressure < self.lookup_table[0][2 + 5]:
             a = 5
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         elif self.lookup_table[0][1 + 6] <= pressure < self.lookup_table[0][2 + 6]:
             a = 6
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         elif self.lookup_table[0][1 + 7] <= pressure <= self.lookup_table[0][2 + 7]:
             a = 7
             return (self.lookup_table[1][2 + a] - self.lookup_table[1][1 + a]) / (
                     self.lookup_table[0][2 + a] - self.lookup_table[0][1 + a]) * (
-                           pressure - self.lookup_table[0][1 + a]) + \
-                   self.lookup_table[1][1 + a]
+                    pressure - self.lookup_table[0][1 + a]) + \
+                self.lookup_table[1][1 + a]
         else:
             return pressure
 

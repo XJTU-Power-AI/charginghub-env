@@ -8,8 +8,8 @@
 #include <map>
 #include "SCP_Base/CHS.hpp"
 #include <boost/python.hpp>
-#include "python/include/boost/python/suite/indexing/vector_indexing_suite.hpp"
-#include "python/include/boost/python/suite/indexing/map_indexing_suite.hpp"
+#include "suite/indexing/vector_indexing_suite.hpp"
+#include "suite/indexing/map_indexing_suite.hpp"
 
 //using namespace std;
 using namespace boost::python;
@@ -19,7 +19,6 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE (pyevstation) //导出的module 名字
 {
     def("Change_Use_Seed", Change_Use_Seed);
-    def("Get_Car_Flow_Dir", Get_Car_Flow_Dir);
     class_<std::map<int, float> >("Map_int_float")
             .def(map_indexing_suite<std::map<int, float> >());
 
