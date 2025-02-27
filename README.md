@@ -10,14 +10,14 @@
 This repository is the official implementation of the charging-hub environment used in our paper [Adaptive Infinite-Horizon Control of Hybrid EV/FCEV Charging Hubs: A Large-Model Based Deep Reinforcement Learning Approach](https://no).
 
 <p float="left">
-  <img src="./assets/charginghub-architecture.jpg" width="45%" />
-  <img src="./assets/training-curve.jpg" width="45%" />
+  <img src="./assets/charginghub-architecture.jpg" width="49%" />
+  <img src="./assets/training-curve.jpg" width="49%" />
 </p>
 
 
 ## Key Features of ChargingHub ENV ⭐:
-- 🛠️ **Advanced EV Charging Model**: Utilizes the Advanced Second-Order FreedomCar battery model to simulate EV charging.
-  <img src="./assets/charging-model.jpg" width="45%" />
+- 🛠️ **Advanced EV Charging Model**: Advanced Second-Order FreedomCar battery model is utilized to simulate EV charging.\
+<img src="./assets/charging-model.jpg" width="45%" />
 - ⚙️ **Advanced FCEV Fueling Model**: Incorporate the SAE J2601 fueling protocol to simulate FCEV refueling.
   ![FCEV Fueling Model](./assets/fueling-lookup-table.jpg)
 - 🌐🌍 **Real-World Data Integration**: The environment model is built using real-world data sources, including traffic patterns, renewable energy production, electricity prices, EV/FCEV parameters, electrolyzers, and fuel cells. This ensures the model can provide actionable insights under real-world conditions, improving accuracy and practicality.
@@ -115,7 +115,7 @@ This repository is the official implementation of the charging-hub environment u
 
 ## Paper Citation
 
-If you used this environment for your experiments or found it helpful, consider citing the following paper:
+If you used this environment for your experiments or found it helpful, consider citing our paper:
 
 <pre>
 bib
