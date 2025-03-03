@@ -16,8 +16,8 @@ This repository is the official implementation of the charging-hub environment u
 
 
 ## Key Features of ChargingHub ENV ⭐:
-- 🛠️ **Advanced EV Charging Model**: Advanced Second-Order FreedomCar battery model is utilized to simulate EV charging.
-  ![FCEV Fueling Model](./assets/charging-model.jpg)
+- 🛠️ **Advanced EV Charging Model**: Advanced 2-Order FreedomCar battery model is used for simulation.
+  <img src="./assets/charging-model.jpg" alt="FCEV Fueling Model" style="width: 40%;">
 
 - ⚙️ **Advanced FCEV Fueling Model**: Incorporate the SAE J2601 fueling protocol to simulate FCEV refueling.
   ![FCEV Fueling Model](./assets/fueling-lookup-table.jpg)
