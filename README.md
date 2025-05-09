@@ -7,7 +7,7 @@
 ![](https://img.shields.io/badge/Boost.Python-1.69.0-blueviolet)
 ![](https://img.shields.io/github/languages/top/XJTU-Power-AI/charginghub-env)
 
-This repository is the official implementation of the charging-hub environment used in our paper [Adaptive Infinite-Horizon Control of Hybrid EV/FCEV Charging Hubs: A Large-Model Based Deep Reinforcement Learning Approach](https://no).
+This repository is the official implementation of the charging-hub environment used in our paper [Adaptive Infinite-Horizon Control of Hybrid EV/FCEV Charging Hubs: A Large-Model Based Deep Reinforcement Learning Approach](https://www.sciencedirect.com/science/article/pii/S0306261925005707).
 
 <p float="left">
   <img src="./assets/charginghub-architecture.jpg" width="49%" />
@@ -117,8 +117,19 @@ This repository is the official implementation of the charging-hub environment u
 
 ## Paper Citation
 
-If you used this environment for your experiments or found it helpful, consider citing our paper:
+If you use this environment for your experiments or find it helpful, please consider citing our paper:
 
-<pre>
-bib
-</pre>
+> Tian Z, Cao X, Zeng B, et al. Adaptive infinite-horizon control of hybrid EV/FCEV charging hubs: A large-model based deep reinforcement learning approach[J]. *Applied Energy*, 2025, 390: 125840.
+
+Alternatively, you can use the following BibTeX entry:
+```bibtex
+@article{tian2025adaptive,
+  title={Adaptive infinite-horizon control of hybrid EV/FCEV charging hubs: A large-model based deep reinforcement learning approach},
+  author={Tian, Zhaoming and Cao, Xiaoyu and Zeng, Bo and Guan, Xiaohong},
+  journal={Applied Energy},
+  volume={390},
+  pages={125840},
+  year={2025},
+  publisher={Elsevier}
+}
+````
